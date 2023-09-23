@@ -1,27 +1,33 @@
+.h1{
+  font-size: 10px;
+  font-weight: bold;
+}
 .container{
   margin:auto;
   height: 100vh;
   text-align: center;
   background-image: linear-gradient(55deg,red,green,blue);
 }
-.container_title, h3, h4{
+/* .container_title, h3, h4{
   margin: 0;
-}
+  max-height: 10vh;
+} */
 .cards_area{
-  height: 70vh;
+  height: 50vh;
 }
+
 .dealer,.player{
 margin: 1vh auto;
-max-height:35vh;
+max-height:20vh;
 line-height: 1rem;
 display: flex;
 flex-direction: row;
-gap:0.2vw
+gap:0.1%;
 }
 
 .card1,.card2,.card3,.card4,.card5{
-  width:15vw;
-  height: 30vh;
+  width: 10%;
+  height: 10%;
   border: 1px solid black;
   margin:auto;
 }
@@ -30,7 +36,7 @@ gap:0.2vw
   max-height: 100%;
 }
 .game_buttons{
-  margin: 8vh auto;
+  /* margin: auto; */
 display: flex;
 justify-content: center;
 gap:5vw;
