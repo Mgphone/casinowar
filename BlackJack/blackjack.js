@@ -1,6 +1,11 @@
 const newGame = document.getElementById("start");
 const hitButton = document.getElementById("hit");
 const stayButton = document.getElementById("stay");
+function updateButton(newGameVisible, hitbuttonVisible, stayButtonVisible) {
+  newGame.style.display = newGameVisible ? "block" : "none";
+  hitButton.style.display = hitbuttonVisible ? "block" : "none";
+  stayButton.style.display = stayButtonVisible ? "block" : "none";
+}
 let dealerArray = [];
 let playerArray = [];
 //This is Deck
@@ -101,20 +106,19 @@ function getScore(cards) {
   }
 
   // If the hand has an Ace and the score is over 21, adjust for the Ace
-  if (hasAce && score > 21) {
-    score -= 10; // Subtract 10 to treat the Ace as 1 instead of 11
+  // if (hasAce && score > 21) {
+  //   score -= 10; // Subtract 10 to treat the Ace as 1 instead of 11
+  // }
+  // if (numberOfAce > 1) {
+  //   score -= 10;
+  // }
+  while (numberOfAce > 0 && score > 21) {
+    score -= 10;
+    numberOfAce--;
   }
 
   return score;
 }
-// function makeItReady() {
-//   // newGame.getElementById("start");
-//   // hitButton.getElementById("hit");
-//   // document.getElementById("stay");
-//   // dealerArray = [];
-//   // playerArray = [];
-// }
-// makeItReady();
 
 function resetArrays() {
   dealerArray = [];
@@ -147,10 +151,11 @@ function clearGameUI() {
 }
 function startGame() {
   resetArrays();
+  updateButton(false, true, true);
   // console.log(dealerArray.length);
-  newGame.style.display = "none";
-  hitButton.style.display = "block";
-  stayButton.style.display = "block";
+  // newGame.style.display = "none";
+  // hitButton.style.display = "block";
+  // stayButton.style.display = "block";
   // Initialize the deck and other code..
 
   let dealerCard = deck[Math.floor(Math.random() * deck.length)];
@@ -163,13 +168,36 @@ function startGame() {
   const dealerCard1Element = document.getElementById("dcard1");
   dealerCard1Element.src = `img/${dealerCard}.png`;
   // Example: Calculate scores for the dealer and player hands
+  // dealerArray.push("AS"); //test for black jack
+  // playerArray.push("AS", "AS"); //test for black jack
+
   dealerArray.push(dealerCard);
   playerArray.push(playerCard1, playerCard2);
-
-  // Call getScore to calculate the initial scores
-  // const dealerScore = getScore(dealerArray);
-  // const playerScore = getScore(playerArray);
   updateScore();
+  if (getScore(playerArray) === 21) {
+    if (getScore(dealerArray) >= 10) {
+      dealerArray.push(deck[Math.floor(Math.random() * deck.length)]);
+      updateScore();
+      for (let i = 0; i < dealerArray.length; i++) {
+        const dealerCardElement = document.getElementById(`dcard${i + 1}`);
+        dealerCardElement.src = `img/${dealerArray[i]}.png`;
+      }
+      if (getScore(dealerArray) === 21) {
+        document.getElementById("check_winner").textContent = "Draw";
+        // newGame.style.display = "block";
+        // hitButton.style.display = "none";
+        // stayButton.style.display = "none";
+        updateButton(true, false, false);
+      } else {
+        document.getElementById("check_winner").textContent = "Player Win";
+        // newGame.style.display = "block";
+        // hitButton.style.display = "none";
+        // stayButton.style.display = "none";
+        updateButton(true, false, false);
+      }
+    }
+  }
+  // console.log(getScore(dealerArray));
 
   // console.log(`Dealer's Card: ${dealerCard}, Score: ${dealerScore}`);
   // console.log(
@@ -180,24 +208,63 @@ newGame.addEventListener("click", startGame);
 hitButton.addEventListener("click", () => {
   const randomCard = deck[Math.floor(Math.random() * deck.length)];
   playerArray.push(randomCard);
+  const updatedPlayerScore = getScore(playerArray);
+  // console.log("Player Array" + playerArray);
   updateScore();
+  function endPlayerTurn() {
+    hitButton.style.display = "none";
+    stayButton.style.display = "none";
+    let dealerScore = getScore(dealerArray);
+
+    while (dealerScore < 17) {
+      let randomCard = deck[Math.floor(Math.random() * deck.length)];
+      dealerArray.push(randomCard);
+      dealerScore = getScore(dealerArray);
+      if (updatedPlayerScore > dealerScore) {
+        updateScore();
+        // newGame.style.display = "block";
+        // hitButton.style.display = "none";
+        // stayButton.style.display = "none";
+        updateButton(true, false, false);
+        // console.log("Player Win");
+        document.getElementById("check_winner").textContent = "Player Win";
+      } else if (updatedPlayerScore == dealerScore) {
+        updateScore();
+        // newGame.style.display = "block";
+        // hitButton.style.display = "none";
+        // stayButton.style.display = "none";
+        updateButton(true, false, false);
+        document.getElementById("check_winner").textContent = "Draw";
+      } else if (dealerArray.length >= 5 && dealerScore <= 21) {
+        document.getElementById("check_winner").textContent =
+          "Dealer Win with five Card Charlie";
+        updateButton(true, false, false);
+      }
+    }
+    for (let i = 0; i < dealerArray.length; i++) {
+      const dealerCardElement = document.getElementById(`dcard${i + 1}`);
+      dealerCardElement.src = `img/${dealerArray[i]}.png`;
+    }
+  }
+
   // console.log(playerArray);
   // Calculate the player's score after adding a card
-  const updatedPlayerScore = getScore(playerArray);
   if (updatedPlayerScore > 21) {
     newGame.style.display = "block";
     hitButton.style.display = "none";
     stayButton.style.display = "none";
-    console.log("Dealer Win");
+    // console.log("Dealer Win");
     document.getElementById("check_winner").textContent = "Dealer Win";
-
-    // makeItReady();
   }
-  if (playerArray.length >= 5 && updatedPlayerScore <= 21) {
+  // console.log("player" + updatedPlayerScore);
+  // console.log("dealer" + dealerScore);
+  else if (updatedPlayerScore == 21) {
+    endPlayerTurn();
+  } else if (playerArray.length >= 5 && updatedPlayerScore <= 21) {
     document.getElementById("check_winner").textContent =
       "Player Win with five Card Charlie";
+    updateButton(true, false, false);
   }
-
   for (let i = 0; i < playerArray.length; i++) {
     const playerCardElement = document.getElementById(`pcard${i + 1}`);
     playerCardElement.src = `img/${playerArray[i]}.png`; // Replace playerArray with your card array
@@ -208,61 +275,66 @@ hitButton.addEventListener("click", () => {
 });
 
 stayButton.addEventListener("click", () => {
-  let dealerScore = getScore(dealerArray);
   const playerScore = getScore(playerArray);
+  let dealerScore = getScore(dealerArray);
 
   while (dealerScore < 17) {
     let randomCard = deck[Math.floor(Math.random() * deck.length)];
     dealerArray.push(randomCard);
     dealerScore = getScore(dealerArray);
   }
-  console.log("Testing array of playerarry" + playerArray);
-  console.log("Testing array of dealerarry" + dealerArray);
+  // console.log("Testing array of playerarry" + playerArray);
+  // console.log("Testing array of dealerarry" + dealerArray);
 
   if (dealerScore > 21 || dealerScore < playerScore) {
     document.getElementById("check_winner").textContent = "Player Win";
-    console.log("Player Win");
+    // console.log("Player Win");
     updateScore();
-    newGame.style.display = "block";
-    hitButton.style.display = "none";
-    stayButton.style.display = "none";
+    updateButton(true, false, false);
+    // newGame.style.display = "block";
+    // hitButton.style.display = "none";
+    // stayButton.style.display = "none";
     // makeItReady();
   } else if (dealerArray.length >= 5 && dealerScore <= 21) {
-    console.log("Dealer Win with Five Card Charlie");
+    // console.log("Dealer Win with Five Card Charlie");
     document.getElementById("check_winner").textContent =
       "Dealer Win with Five Card Charlie";
     updateScore();
-    newGame.style.display = "block";
-    hitButton.style.display = "none";
-    stayButton.style.display = "none";
+    // newGame.style.display = "block";
+    // hitButton.style.display = "none";
+    // stayButton.style.display = "none";
+    updateButton(true, false, false);
     // makeItReady();
   } else if (playerArray.length >= 5) {
-    console.log("Player Win with five Card Charlie");
+    // console.log("Player Win with five Card Charlie");
 
     document.getElementById("check_winner").textContent =
       "Player Win With Five Card Charlie";
     updateScore();
-    newGame.style.display = "block";
-    hitButton.style.display = "none";
-    stayButton.style.display = "none";
+    // newGame.style.display = "block";
+    // hitButton.style.display = "none";
+    // stayButton.style.display = "none";
+    updateButton(true, false, false);
     // makeItReady();
   } else if (dealerScore === playerScore) {
-    console.log("Draw");
+    // console.log("Draw");
     document.getElementById("check_winner").textContent = "Draw";
 
     updateScore();
-    newGame.style.display = "block";
-    hitButton.style.display = "none";
-    stayButton.style.display = "none";
+    // newGame.style.display = "block";
+    // hitButton.style.display = "none";
+    // stayButton.style.display = "none";
+    updateButton(true, false, false);
     // makeItReady();
   } else {
     document.getElementById("check_winner").textContent = "Dealer Win";
-    console.log("Dealer Win");
+    // console.log("Dealer Win");
     updateScore();
-    newGame.style.display = "block";
-    hitButton.style.display = "none";
-    stayButton.style.display = "none";
+    // newGame.style.display = "block";
+    // hitButton.style.display = "none";
+    // stayButton.style.display = "none";
     // makeItReady();
+    updateButton(true, false, false);
   }
   // console.log(dealerArray);
   for (let i = 0; i < dealerArray.length; i++) {
